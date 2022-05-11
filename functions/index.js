@@ -56,5 +56,17 @@ app.get('/api/books', async (req, res) => {
     }
 })
 
+app.put("/api/books/:id", async (req, res) => {
+    try {
+        const document = db.collection("books").doc(req.params.id);
+        await document.update({
+            name: req.body.name,
+        });
+        return res.status(200).json();
+    } catch (error) {
+        return res.status(500).json();
+    }
+});
+
 
 exports.app = functions.https.onRequest(app);

@@ -18,13 +18,43 @@ app.get('/hello', (req, res) => {
 app.post('/api/books', async (req, res) => {
     try {
         await db.collection('books')
-            .doc('/' + req.body.id + '/')
-            .create({ name: req.body.name })
+            .add({ name: req.body.name })
         return res.status(204).json()
     } catch (err) {
         console.log(err)
-        return res.status(500).send(err)
+        return res.status(500).send({ message: 'Internal error' })
     }
 })
+
+app.get('/api/books/:id', async (req, res) => {
+    try {
+        const doc = db.collection('books').doc(req.params.id)
+        const item = await doc.get()
+        return res.status(200).json(item.data())
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send({ message: 'Internal error' })
+    }
+})
+
+
+app.get('/api/books', async (req, res) => {
+    try {
+        const query = db.collection('books')
+        const querySnapshot = await query.get()
+        const docs = querySnapshot.docs
+
+        const items = docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+        }))
+
+        return res.status(200).json(items)
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send({ message: 'Internal error' })
+    }
+})
+
 
 exports.app = functions.https.onRequest(app);

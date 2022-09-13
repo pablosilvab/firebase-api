@@ -11,36 +11,73 @@ admin.initializeApp({
 
 const db = admin.firestore()
 
-app.get('/hello', (req, res) => {
-    return res.status(200).json({ message: 'Hello World!' })
-})
 
-app.post('/api/books', async (req, res) => {
+app.post('/api/products', async (req, res) => {
     try {
-        await db.collection('books')
-            .add({ name: req.body.name })
-        return res.status(204).json()
+        const { body } = req;
+        if (!body.name) {
+            return res.status(400).send({
+                status: 'Failed',
+                data: { error: "One of the following keys is missing or is empty in request body: 'name'" }
+            })
+        }
+        const product = {
+            name: body.name
+        }
+
+        await db.collection('products').add(product)
+        return res.status(201).send({
+            status: 'OK',
+            data: product
+        })
     } catch (err) {
         console.log(err)
-        return res.status(500).send({ message: 'Internal error' })
+        return res.status(500).send({
+            status: 'Failed',
+            data: { error: 'Internal error' }
+        })
     }
 })
 
-app.get('/api/books/:id', async (req, res) => {
+app.get('/api/products/:id', async (req, res) => {
     try {
-        const doc = db.collection('books').doc(req.params.id)
+        const { params: { id }, } = req;
+        if (!id) {
+            res.status(400).send({
+                status: "Failed",
+                data: { error: "Parameter ':id' can not be empty" },
+            });
+        }
+
+        const doc = db.collection('products').doc(id)
         const item = await doc.get()
-        return res.status(200).json(item.data())
+
+        if (!item.exists) {
+            return res.status(404).send({
+                status: 'OK',
+                data: 'Not found'
+            })
+        }
+
+        return res.status(200).send({
+            status: 'OK',
+            data: item.data()
+        })
+
+
     } catch (err) {
         console.log(err)
-        return res.status(500).send({ message: 'Internal error' })
+        return res.status(500).send({
+            status: 'Failed',
+            data: { error: 'Internal error' }
+        })
     }
 })
 
 
-app.get('/api/books', async (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
-        const query = db.collection('books')
+        const query = db.collection('products')
         const querySnapshot = await query.get()
         const docs = querySnapshot.docs
 
@@ -49,22 +86,57 @@ app.get('/api/books', async (req, res) => {
             name: doc.data().name,
         }))
 
-        return res.status(200).json(items)
+        return res.status(200).send({
+            status: 'OK',
+            data: items
+        })
+
     } catch (err) {
         console.log(err)
-        return res.status(500).send({ message: 'Internal error' })
+        return res.status(500).send({
+            status: 'Failed',
+            data: { error: 'Internal error' }
+        })
     }
 })
 
-app.put("/api/books/:id", async (req, res) => {
+app.put("/api/products/:id", async (req, res) => {
     try {
-        const document = db.collection("books").doc(req.params.id);
+        const { params: { id }, } = req;
+        if (!id) {
+            res.status(400).send({
+                status: "Failed",
+                data: { error: "Parameter ':id' can not be empty" },
+            });
+        }
+
+        const document = db.collection("products").doc(id);
+        const item = await document.get()
+
+        if (!item.exists) {
+            return res.status(404).send({
+                status: 'OK',
+                data: 'Not found'
+            })
+        }
+
         await document.update({
             name: req.body.name,
         });
-        return res.status(200).json();
-    } catch (error) {
-        return res.status(500).json();
+
+        const doc = db.collection('products').doc(id)
+        const updatedItem = await doc.get()
+        return res.status(200).send({
+            status: 'OK',
+            data: updatedItem.data()
+        })
+
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send({
+            status: 'Failed',
+            data: { error: 'Internal error' }
+        })
     }
 });
 

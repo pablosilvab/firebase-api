@@ -2,7 +2,7 @@
 
 This project is a POC to use Firebase Functions as a backend in a project
 
-## Installation
+## Installation
 
 Run emulator locally
 

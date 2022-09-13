@@ -10,3 +10,9 @@ Run emulator locally
 firebase emulators:start 
 ```
 
+## Deployment 
+
+Deploy to GCP 
+```
+firebase deploy --only functions
+```

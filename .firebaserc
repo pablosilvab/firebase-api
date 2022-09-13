@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "fir-api-d73ed"
-  }
+    "default": "firebase-api",
+    "staging": "fir-api-d73ed"
+  },
+  "targets": {},
+  "etags": {}
 }
